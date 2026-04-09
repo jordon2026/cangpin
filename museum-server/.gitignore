@@ -1,0 +1,30 @@
+# ===== 编译产物 =====
+target/
+*.class
+*.jar
+*.war
+
+# ===== IDE =====
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# ===== 【安全】敏感文件 - 绝对不能提交到代码库 =====
+.env
+.env.local
+.env.production
+*.pem
+*.key
+*.p12
+*.jks
+application-local.yml
+application-prod.yml
+
+# ===== 日志 =====
+logs/
+*.log
+
+# ===== Maven =====
+!.mvn/wrapper/maven-wrapper.jar

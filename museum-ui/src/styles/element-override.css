@@ -1,0 +1,117 @@
+/* ========================================
+   Element Plus 样式覆盖 - 文博色系
+   ======================================== */
+
+/* 按钮 */
+.el-button--primary {
+  --el-button-bg-color: var(--color-primary) !important;
+  --el-button-border-color: var(--color-primary) !important;
+  --el-button-hover-bg-color: var(--color-primary-light) !important;
+  --el-button-hover-border-color: var(--color-primary-light) !important;
+  --el-button-active-bg-color: var(--color-primary-dark) !important;
+  --el-button-active-border-color: var(--color-primary-dark) !important;
+}
+
+.el-button--danger {
+  --el-button-bg-color: var(--color-red) !important;
+  --el-button-border-color: var(--color-red) !important;
+}
+
+/* 链接 */
+.el-link--primary {
+  --el-link-text-color: var(--color-primary) !important;
+}
+
+/* 输入框聚焦 */
+.el-input__wrapper:focus-within,
+.el-textarea__inner:focus {
+  box-shadow: 0 0 0 1px var(--color-gold) inset !important;
+}
+
+/* 菜单激活色 */
+.el-menu-item.is-active {
+  color: var(--color-primary) !important;
+  background-color: var(--color-primary-bg) !important;
+  border-right: 3px solid var(--color-gold) !important;
+}
+
+.el-menu-item:hover {
+  background-color: var(--color-primary-bg) !important;
+}
+
+/* Tabs 激活色 */
+.el-tabs__active-bar {
+  background-color: var(--color-primary) !important;
+}
+.el-tabs__item.is-active {
+  color: var(--color-primary) !important;
+}
+.el-tabs__item:hover {
+  color: var(--color-primary-light) !important;
+}
+
+/* 分页激活色 */
+.el-pagination.is-background .el-pager li.is-active {
+  background-color: var(--color-primary) !important;
+}
+
+/* Tag 颜色 */
+.el-tag {
+  --el-tag-bg-color: var(--color-primary-bg);
+  --el-tag-border-color: var(--color-border);
+  --el-tag-text-color: var(--color-primary);
+}
+
+/* Table */
+.el-table th.el-table__cell {
+  background-color: #FAF6F1 !important;
+  color: var(--color-text) !important;
+  font-weight: 600;
+}
+.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+  background-color: #FDFCFA !important;
+}
+.el-table__body tr:hover > td.el-table__cell {
+  background-color: #F5EFE8 !important;
+}
+
+/* 消息提示 */
+.el-message-box__btns .el-button--primary {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+/* 对话框 */
+.el-dialog__header {
+  border-bottom: 1px solid var(--color-border-light);
+  padding-bottom: 12px;
+}
+.el-dialog__title {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+/* 卡片 */
+.el-card {
+  border-color: var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+.el-card__header {
+  border-bottom-color: var(--color-border-light);
+}
+
+/* Breadcrumb */
+.el-breadcrumb__inner a,
+.el-breadcrumb__inner.is-link {
+  color: var(--color-text-light) !important;
+  font-weight: normal !important;
+}
+.el-breadcrumb__item:last-child .el-breadcrumb__inner {
+  color: var(--color-text) !important;
+}
+
+/* Descriptions */
+.el-descriptions__title {
+  color: var(--color-text);
+  font-weight: 600;
+}

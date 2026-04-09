@@ -1,0 +1,65 @@
+/* ========================================
+   博物馆管理系统 - CSS 变量（文博色系）
+   ======================================== */
+:root {
+  /* 主色 - 古铜/青铜器色 */
+  --color-primary: #8B4513;
+  --color-primary-light: #A0522D;
+  --color-primary-lighter: #C9A96E;
+  --color-primary-dark: #5C2E00;
+  --color-primary-bg: rgba(139, 69, 19, 0.08);
+
+  /* 金色 - 传统金饰 */
+  --color-gold: #C9A96E;
+  --color-gold-light: #D4B896;
+  --color-gold-dark: #A08040;
+
+  /* 朱红 - 传统印章红 */
+  --color-red: #C23531;
+  --color-red-light: #E85555;
+
+  /* 背景色 - 象牙白/浅米色 */
+  --color-bg: #F5F0EB;
+  --color-bg-light: #FAFAF5;
+  --color-bg-page: #F0EDE8;
+
+  /* 文字色 - 深褐色 */
+  --color-text: #3E2723;
+  --color-text-regular: #5D4037;
+  --color-text-light: #8D6E63;
+  --color-text-muted: #BCAAA4;
+  --color-text-placeholder: #D7CCC8;
+
+  /* 边框色 */
+  --color-border: #D7CCC8;
+  --color-border-light: #EFEBE9;
+
+  /* 侧边栏 */
+  --color-sidebar-bg: #3E2723;
+  --color-sidebar-text: #D7CCC8;
+  --color-sidebar-active-text: #FFD54F;
+  --color-sidebar-hover-bg: rgba(255,255,255,0.08);
+
+  /* 顶栏 */
+  --color-navbar-bg: #FFFFF0;
+  --color-navbar-border: #D7CCC8;
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 4px rgba(62, 39, 35, 0.08);
+  --shadow-md: 0 4px 12px rgba(62, 39, 35, 0.1);
+  --shadow-lg: 0 8px 24px rgba(62, 39, 35, 0.12);
+
+  /* 圆角 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* 过渡 */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+
+  /* 布局 */
+  --sidebar-width: 240px;
+  --sidebar-collapsed-width: 64px;
+  --navbar-height: 56px;
+}
