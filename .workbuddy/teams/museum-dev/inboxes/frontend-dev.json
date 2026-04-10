@@ -1,0 +1,65 @@
+[
+  {
+    "id": "msg-1775528548307-o8t06q",
+    "from": "team-lead",
+    "to": "frontend-dev",
+    "type": "message",
+    "content": "请汇报一下当前进度，你完成了哪些文件？遇到了什么问题吗？",
+    "timestamp": "2026-04-07T02:22:28.307Z",
+    "read": true
+  },
+  {
+    "id": "msg-1775528555600-g5bu56",
+    "from": "team-lead",
+    "to": "frontend-dev",
+    "type": "message",
+    "content": "请汇报一下当前进度，你完成了哪些文件？",
+    "timestamp": "2026-04-07T02:22:35.600Z",
+    "read": true
+  },
+  {
+    "id": "msg-1775528586278-zd9zvp",
+    "from": "team-lead",
+    "to": "frontend-dev",
+    "type": "message",
+    "content": "你开始创建文件了吗？请尽快开始。第一步先用 PowerShell 执行：cd d:/聚景科技/2026/博物馆/源码 && npm create vite@latest museum-ui -- --template vue 然后安装依赖。",
+    "timestamp": "2026-04-07T02:23:06.278Z",
+    "read": true
+  },
+  {
+    "id": "msg-1775528598912-rc1466",
+    "from": "team-lead",
+    "to": "frontend-dev",
+    "type": "message",
+    "content": "进度如何？npm init 成功了吗？",
+    "timestamp": "2026-04-07T02:23:18.912Z",
+    "read": true
+  },
+  {
+    "id": "msg-1775528619782-fzpvdt",
+    "from": "team-lead",
+    "to": "frontend-dev",
+    "type": "message",
+    "content": "后端已经开始创建文件了，你还没开始！请立刻执行 cd d:/聚景科技/2026/博物馆/源码 && npm create vite@latest museum-ui -- --template vue 来初始化前端项目。如果 npm 有问题，手动创建项目结构也行。",
+    "timestamp": "2026-04-07T02:23:39.782Z",
+    "read": true
+  },
+  {
+    "id": "msg-1775528643457-5301f9",
+    "from": "team-lead",
+    "to": "frontend-dev",
+    "type": "message",
+    "content": "项目已经初始化了，很好。请立即开始创建所有 Vue 源文件：\n1. 修改 src/main.js 引入 Element Plus\n2. 创建 styles/variables.css（文博色系 CSS 变量）\n3. 创建 styles/global.css\n4. 创建 styles/element-override.css  \n5. 创建 api/request.js（Axios 封装）\n6. 创建 api/auth.js\n7. 创建 router/index.js\n8. 创建 stores/user.js 和 stores/app.js\n9. 创建 layout/MainLayout.vue 和子组件\n10. 创建 views/login/index.vue（文博风格登录页）\n11. 创建 views/dashboard/index.vue\n12. 创建 views/error/404.vue\n13. 创建 assets/login-bg.svg 和 logo.svg\n\n请立即开始创建这些文件！",
+    "timestamp": "2026-04-07T02:24:03.458Z",
+    "read": true
+  },
+  {
+    "id": "shutdown-1775529531882",
+    "from": "team-lead",
+    "to": "frontend-dev",
+    "type": "shutdown_request",
+    "content": "{\"type\":\"shutdown_request\",\"request_id\":\"shutdown-1775529531882\",\"reason\":\"任务已完成，请关闭。\",\"from\":\"team-lead\",\"timestamp\":\"2026-04-07T02:38:51.882Z\"}",
+    "timestamp": "2026-04-07T02:38:51.882Z",
+    "read": true
+  }
+]

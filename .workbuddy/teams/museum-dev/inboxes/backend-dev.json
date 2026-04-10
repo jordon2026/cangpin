@@ -1,0 +1,65 @@
+[
+  {
+    "id": "msg-1775528541461-0ck521",
+    "from": "team-lead",
+    "to": "backend-dev",
+    "type": "message",
+    "content": "请汇报一下当前进度，你完成了哪些文件？遇到了什么问题吗？",
+    "timestamp": "2026-04-07T02:22:21.461Z",
+    "read": true
+  },
+  {
+    "id": "msg-1775528553091-dwnpgy",
+    "from": "team-lead",
+    "to": "backend-dev",
+    "type": "message",
+    "content": "请汇报一下当前进度，你完成了哪些文件？",
+    "timestamp": "2026-04-07T02:22:33.091Z",
+    "read": true
+  },
+  {
+    "id": "msg-1775528581174-auedtc",
+    "from": "team-lead",
+    "to": "backend-dev",
+    "type": "message",
+    "content": "你开始创建文件了吗？请尽快开始。第一步先用 PowerShell 执行：mkdir -p d:/聚景科技/2026/博物馆/源码/museum-server/src/main/java/com/jujing/museum/ 和所有子目录结构。然后依次创建 pom.xml、application.yml、数据库脚本和所有 Java 文件。",
+    "timestamp": "2026-04-07T02:23:01.174Z",
+    "read": true
+  },
+  {
+    "id": "msg-1775528595908-6ngnf6",
+    "from": "team-lead",
+    "to": "backend-dev",
+    "type": "message",
+    "content": "进度如何？创建了哪些文件了？",
+    "timestamp": "2026-04-07T02:23:15.908Z",
+    "read": true
+  },
+  {
+    "id": "msg-1775528613775-indb77",
+    "from": "team-lead",
+    "to": "backend-dev",
+    "type": "message",
+    "content": "项目目录已出现但还没有文件，请立即开始创建所有文件。先创建目录结构，然后按顺序创建 pom.xml、application.yml、Java 源文件、SQL 脚本。",
+    "timestamp": "2026-04-07T02:23:33.775Z",
+    "read": true
+  },
+  {
+    "id": "msg-1775528662675-swtxgi",
+    "from": "team-lead",
+    "to": "backend-dev",
+    "type": "message",
+    "content": "目录结构已创建好，但还没有 pom.xml 和 Java 文件。请立即开始写代码！先创建 pom.xml，然后 application.yml，再写 Java 源文件。每个文件都要完整可编译。",
+    "timestamp": "2026-04-07T02:24:22.675Z",
+    "read": true
+  },
+  {
+    "id": "shutdown-1775529521212",
+    "from": "team-lead",
+    "to": "backend-dev",
+    "type": "shutdown_request",
+    "content": "{\"type\":\"shutdown_request\",\"request_id\":\"shutdown-1775529521212\",\"reason\":\"任务已完成，请关闭。\",\"from\":\"team-lead\",\"timestamp\":\"2026-04-07T02:38:41.212Z\"}",
+    "timestamp": "2026-04-07T02:38:41.212Z",
+    "read": true
+  }
+]
