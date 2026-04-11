@@ -34,3 +34,13 @@ export function resetPwd(userId) {
 export function updateUserStatus(userId, status) {
   return request({ url: '/system/user/status', method: 'put', data: { userId, status } })
 }
+
+// 修改密码
+export function updatePassword(oldPassword, newPassword) {
+  return request({ url: '/auth/password', method: 'put', data: { oldPassword, newPassword } })
+}
+
+// 更新个人信息
+export function updateProfile(data) {
+  return request({ url: '/auth/profile', method: 'put', data })
+}

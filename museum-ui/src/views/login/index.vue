@@ -108,9 +108,16 @@
                 clearable
                 class="captcha-input"
               />
-              <div class="captcha-img" @click="refreshCaptcha" title="点击刷新验证码">
+              <div class="captcha-img" @click="refreshCaptcha" :title="captchaError ? '点击重新加载验证码' : '点击刷新验证码'">
                 <img v-if="captchaImg" :src="captchaImg" alt="验证码" />
-                <span v-else class="captcha-placeholder">加载中...</span>
+                <div v-else-if="captchaLoading" class="captcha-placeholder">
+                  <el-icon class="captcha-spin"><Loading /></el-icon>
+                  <span>加载中</span>
+                </div>
+                <div v-else class="captcha-placeholder captcha-error">
+                  <el-icon><RefreshRight /></el-icon>
+                  <span>点击重试</span>
+                </div>
               </div>
             </div>
           </el-form-item>
@@ -147,6 +154,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
 import { ElMessage } from 'element-plus'
+import { Loading, RefreshRight } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -157,6 +165,8 @@ const showPassword = ref(false)
 const rememberMe = ref(false)
 const captchaImg = ref('')
 const captchaUuid = ref('')
+const captchaLoading = ref(false)
+const captchaError = ref(false)
 
 const loginForm = reactive({
   username: '',
@@ -173,6 +183,10 @@ const loginRules = {
 
 // 获取验证码
 async function refreshCaptcha() {
+  if (captchaLoading.value) return
+  captchaLoading.value = true
+  captchaError.value = false
+  captchaImg.value = ''
   try {
     const data = await userStore.getCaptcha()
     captchaImg.value = data.img
@@ -180,7 +194,10 @@ async function refreshCaptcha() {
     loginForm.uuid = data.uuid
     loginForm.captchaCode = ''
   } catch (e) {
-    // 忽略
+    captchaError.value = true
+    ElMessage.warning('验证码加载失败，请点击图片区域重试')
+  } finally {
+    captchaLoading.value = false
   }
 }
 
@@ -406,8 +423,36 @@ onMounted(() => {
 }
 
 .captcha-placeholder {
-  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 11px;
   color: #BCAAA4;
+  line-height: 1.2;
+}
+
+.captcha-placeholder .el-icon {
+  font-size: 16px;
+}
+
+.captcha-error {
+  color: #C23531;
+  cursor: pointer;
+}
+
+.captcha-error:hover {
+  color: #a02020;
+}
+
+.captcha-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* 登录选项 */

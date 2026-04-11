@@ -70,4 +70,39 @@ public class AuthController {
     public R<List<SysMenu>> getMenus() {
         return R.ok(authService.getMenuTree());
     }
+
+    /**
+     * 修改当前用户密码
+     */
+    @Operation(summary = "修改密码")
+    @PutMapping("/password")
+    public R<Void> updatePassword(@RequestBody java.util.Map<String, String> params) {
+        String oldPassword = params.get("oldPassword");
+        String newPassword = params.get("newPassword");
+        authService.updatePassword(oldPassword, newPassword);
+        return R.ok();
+    }
+
+    /**
+     * 更新当前用户信息
+     */
+    @Operation(summary = "更新个人信息")
+    @PutMapping("/profile")
+    public R<Void> updateProfile(@RequestBody java.util.Map<String, String> params) {
+        String realName = params.get("realName");
+        String phone = params.get("phone");
+        String email = params.get("email");
+        String avatar = params.get("avatar");
+        authService.updateUserInfo(realName, phone, email, avatar);
+        return R.ok();
+    }
+
+    /**
+     * 获取仪表盘统计数据
+     */
+    @Operation(summary = "仪表盘统计")
+    @GetMapping("/dashboard")
+    public R<com.jujing.museum.modules.auth.dto.DashboardDTO> getDashboard() {
+        return R.ok(authService.getDashboardStats());
+    }
 }

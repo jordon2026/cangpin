@@ -102,6 +102,7 @@ CREATE TABLE `sys_dept` (
     `dept_name`   VARCHAR(128) NOT NULL                COMMENT '部门名称',
     `leader`      VARCHAR(64)  DEFAULT ''              COMMENT '负责人',
     `phone`       VARCHAR(20)  DEFAULT ''              COMMENT '联系电话',
+    `email`       VARCHAR(64)  DEFAULT ''              COMMENT '邮箱',
     `sort`        INT          NOT NULL DEFAULT 0      COMMENT '排序',
     `status`      TINYINT      NOT NULL DEFAULT 1      COMMENT '状态：1-正常 0-禁用',
     `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

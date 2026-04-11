@@ -74,9 +74,10 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
+import { getDashboard } from '@/api/auth'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -88,11 +89,25 @@ const currentDate = computed(() => {
 })
 
 const statList = ref([
-  { title: '藏品总数', value: '1,286', icon: 'Files', bgColor: 'rgba(139,69,19,0.1)', iconColor: '#8B4513' },
-  { title: '在库数量', value: '1,058', icon: 'Box', bgColor: 'rgba(76,175,80,0.1)', iconColor: '#4CAF50' },
-  { title: '外借数量', value: '128', icon: 'Promotion', bgColor: 'rgba(255,152,0,0.1)', iconColor: '#FF9800' },
-  { title: '待处理工单', value: '7', icon: 'Bell', bgColor: 'rgba(194,53,49,0.1)', iconColor: '#C23531' }
+  { title: '藏品总数', value: '0', icon: 'Files', bgColor: 'rgba(139,69,19,0.1)', iconColor: '#8B4513' },
+  { title: '在库数量', value: '0', icon: 'Box', bgColor: 'rgba(76,175,80,0.1)', iconColor: '#4CAF50' },
+  { title: '外借数量', value: '0', icon: 'Promotion', bgColor: 'rgba(255,152,0,0.1)', iconColor: '#FF9800' },
+  { title: '待处理工单', value: '0', icon: 'Bell', bgColor: 'rgba(194,53,49,0.1)', iconColor: '#C23531' }
 ])
+
+// 更新统计数据
+function updateStats(data) {
+  statList.value[0].value = String(data.totalCollections || 0)
+  statList.value[1].value = String(data.inStorage || 0)
+  statList.value[2].value = String(data.onLoan || 0)
+  
+  // 计算待处理工单数
+  const pending = (data.pendingInbound || 0) + 
+                  (data.pendingOutbound || 0) + 
+                  (data.pendingApproval || 0) + 
+                  (data.pendingInventory || 0)
+  statList.value[3].value = String(pending)
+}
 
 const quickActions = ref([
   { title: '藏品登记', icon: 'Plus', color: '#8B4513', action: () => router.push('/collection/info') },
@@ -115,6 +130,18 @@ const recentLogs = ref([
   { text: '盘点任务「库房A区」已完成', time: '昨天', color: '#2196F3' },
   { text: '用户「张三」修改密码', time: '04-05', color: '#FF9800' }
 ])
+
+// 页面加载时获取统计数据
+onMounted(async () => {
+  try {
+    const res = await getDashboard()
+    if (res.code === 200 && res.data) {
+      updateStats(res.data)
+    }
+  } catch (error) {
+    console.error('获取统计数据失败', error)
+  }
+})
 </script>
 
 <style scoped>

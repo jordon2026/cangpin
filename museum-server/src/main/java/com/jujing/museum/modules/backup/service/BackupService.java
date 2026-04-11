@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 /**
  * 数据备份服务
+ * 使用 TCP 直连方式执行 mysqldump（不需要 docker exec）
  */
 @Slf4j
 @Service
@@ -45,8 +46,12 @@ public class BackupService {
     @Value("${app.backup.max-keep:30}")
     private int maxKeep;
 
+    @Value("${app.backup.docker-container:}")
+    private String dockerContainer;
+
     /**
      * 执行数据库备份
+     * 使用 TCP 直连方式：直接连接 MySQL 执行 mysqldump
      */
     public BackupFileDTO backup() throws Exception {
         // 解析数据库连接信息
@@ -66,7 +71,7 @@ public class BackupService {
         String fileName = String.format("%s_%s.sql", dbName, timestamp);
         String filePath = backupPath + File.separator + fileName;
 
-        // 查找mysqldump命令
+        // 查找 mysqldump 命令
         String mysqldump = findMysqldump();
 
         // 构建命令
@@ -89,6 +94,7 @@ public class BackupService {
 
         // 执行备份
         ProcessBuilder pb = new ProcessBuilder(command);
+        pb.environment().put("MYSQL_PWD", StrUtil.isNotEmpty(dbPassword) ? dbPassword : "");
         pb.redirectErrorStream(false);
 
         Process process = pb.start();
@@ -119,6 +125,12 @@ public class BackupService {
             throw new RuntimeException("备份失败: " + errorMsg);
         }
 
+        // 检查文件是否生成
+        File backupFile = new File(filePath);
+        if (!backupFile.exists() || backupFile.length() == 0) {
+            throw new RuntimeException("备份文件生成失败或文件为空");
+        }
+
         // 清理旧备份
         cleanOldBackups();
 
@@ -126,7 +138,6 @@ public class BackupService {
         BackupFileDTO result = new BackupFileDTO();
         result.setFileName(fileName);
         result.setFilePath(filePath);
-        File backupFile = new File(filePath);
         result.setFileSize(backupFile.length());
         result.setSizeDesc(formatFileSize(backupFile.length()));
         result.setBackupTime(DateUtil.format(new java.util.Date(), "yyyy-MM-dd HH:mm:ss"));
@@ -222,10 +233,10 @@ public class BackupService {
             }
         }
 
-        // 查找mysql命令
+        // 查找 mysql 命令
         String mysql = findMysql();
 
-        // 构建命令
+        // 构建命令 - 直接 TCP 连接
         List<String> command = new ArrayList<>();
         command.add(mysql);
         command.add("-h" + host);
@@ -240,6 +251,7 @@ public class BackupService {
 
         // 执行恢复
         ProcessBuilder pb = new ProcessBuilder(command);
+        pb.environment().put("MYSQL_PWD", StrUtil.isNotEmpty(dbPassword) ? dbPassword : "");
         pb.redirectErrorStream(false);
 
         Process process = pb.start();
@@ -288,7 +300,7 @@ public class BackupService {
                 .sorted(Comparator.comparingLong(File::lastModified).reversed())
                 .collect(Collectors.toList());
 
-        // 保留最新的maxKeep个文件
+        // 保留最新的 maxKeep 个文件
         if (files.size() > maxKeep) {
             for (int i = maxKeep; i < files.size(); i++) {
                 File file = files.get(i);
@@ -300,7 +312,7 @@ public class BackupService {
     }
 
     /**
-     * 查找mysqldump命令
+     * 查找 mysqldump 命令
      */
     private String findMysqldump() {
         if (StrUtil.isNotEmpty(mysqldumpPath) && new File(mysqldumpPath).exists()) {
@@ -313,7 +325,8 @@ public class BackupService {
             "mysql\\mysqldump.exe",
             "C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump.exe",
             "/usr/bin/mysqldump",
-            "/usr/local/bin/mysqldump"
+            "/usr/local/bin/mysqldump",
+            "/usr/local/mysql/bin/mysqldump"
         };
 
         for (String path : paths) {
@@ -322,12 +335,12 @@ public class BackupService {
             }
         }
 
-        // 返回默认命令，让系统PATH处理
+        // 返回默认命令，让系统 PATH 处理
         return "mysqldump";
     }
 
     /**
-     * 查找mysql命令
+     * 查找 mysql 命令
      */
     private String findMysql() {
         String[] paths = {
@@ -335,7 +348,8 @@ public class BackupService {
             "mysql\\mysql.exe",
             "C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe",
             "/usr/bin/mysql",
-            "/usr/local/bin/mysql"
+            "/usr/local/bin/mysql",
+            "/usr/local/mysql/bin/mysql"
         };
 
         for (String path : paths) {
@@ -348,7 +362,7 @@ public class BackupService {
     }
 
     /**
-     * 解析数据库URL
+     * 解析数据库 URL
      */
     private String[] parseDbUrl(String url) {
         // jdbc:mysql://localhost:3306/museum_db?...
@@ -357,31 +371,28 @@ public class BackupService {
             String withoutPrefix = url.replace("jdbc:mysql://", "");
             String[] withParams = withoutPrefix.split("\\?", 2);
             String hostPortDb = withParams[0];
-            
-            // 处理可能的IPv6地址 [::1]:3306
-            int lastColon = hostPortDb.lastIndexOf(':');
-            int secondColon = hostPortDb.indexOf(':', hostPortDb.indexOf(':') + 1);
-            
-            String host, port, dbName;
-            if (hostPortDb.startsWith("[") && secondColon > 0) {
-                // IPv6格式: [::1]:3306/dbname
-                int closeBracket = hostPortDb.indexOf(']');
-                host = hostPortDb.substring(0, closeBracket + 1);
-                port = hostPortDb.substring(closeBracket + 2, lastColon);
-                dbName = hostPortDb.substring(lastColon + 1);
-            } else if (secondColon > 0 && secondColon == lastColon) {
-                // 标准格式: host:port/dbname
-                String[] parts = hostPortDb.split(":");
-                host = parts[0];
-                port = parts[1];
-                dbName = parts[2];
+
+            // 分割 host:port 和 dbname
+            int slashIndex = hostPortDb.indexOf('/');
+            if (slashIndex < 0) {
+                throw new RuntimeException("无效的数据库URL，缺少数据库名: " + url);
+            }
+
+            String hostPort = hostPortDb.substring(0, slashIndex);
+            String dbName = hostPortDb.substring(slashIndex + 1);
+
+            // 分割 host 和 port
+            String host;
+            String port;
+            if (hostPort.contains(":")) {
+                int colonIndex = hostPort.lastIndexOf(':');
+                host = hostPort.substring(0, colonIndex);
+                port = hostPort.substring(colonIndex + 1);
             } else {
-                // 简单格式 (只用默认端口)
-                dbName = hostPortDb;
-                host = "localhost";
+                host = hostPort;
                 port = "3306";
             }
-            
+
             return new String[]{host, port, dbName};
         } catch (Exception e) {
             log.error("解析数据库URL失败: {}", url, e);

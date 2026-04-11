@@ -4,6 +4,9 @@
       <template #header>
         <div class="card-header">
           <span>个人信息</span>
+          <el-button type="primary" size="small" @click="showPasswordDialog = true">
+            <el-icon><Lock /></el-icon> 修改密码
+          </el-button>
         </div>
       </template>
 
@@ -69,18 +72,92 @@
         </el-form>
       </div>
     </el-card>
+
+    <!-- 修改密码对话框 -->
+    <el-dialog v-model="showPasswordDialog" title="修改密码" width="400px">
+      <el-form ref="pwdFormRef" :model="pwdForm" :rules="pwdRules" label-width="80px">
+        <el-form-item label="旧密码" prop="oldPassword">
+          <el-input v-model="pwdForm.oldPassword" type="password" show-password placeholder="请输入旧密码" />
+        </el-form-item>
+        <el-form-item label="新密码" prop="newPassword">
+          <el-input v-model="pwdForm.newPassword" type="password" show-password placeholder="请输入新密码（至少6位）" />
+        </el-form-item>
+        <el-form-item label="确认密码" prop="confirmPassword">
+          <el-input v-model="pwdForm.confirmPassword" type="password" show-password placeholder="请再次输入新密码" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showPasswordDialog = false">取消</el-button>
+        <el-button type="primary" :loading="pwdLoading" @click="handleUpdatePassword">确认修改</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
+import { updatePassword, updateProfile } from '@/api/system/user'
+import { getUserInfo } from '@/api/auth'
 
 const userStore = useUserStore()
 const formRef = ref(null)
+const pwdFormRef = ref(null)
 const saveLoading = ref(false)
+const pwdLoading = ref(false)
 const avatarUrl = ref(localStorage.getItem('userAvatar') || '')
+const showPasswordDialog = ref(false)
+
+// 修改密码表单
+const pwdForm = reactive({
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+})
+
+const validateConfirmPassword = (rule, value, callback) => {
+  if (value !== pwdForm.newPassword) {
+    callback(new Error('两次输入的密码不一致'))
+  } else {
+    callback()
+  }
+}
+
+const pwdRules = {
+  oldPassword: [{ required: true, message: '请输入旧密码', trigger: 'blur' }],
+  newPassword: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 6, message: '新密码长度不能少于6位', trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { required: true, message: '请再次输入新密码', trigger: 'blur' },
+    { validator: validateConfirmPassword, trigger: 'blur' }
+  ]
+}
+
+// 修改密码
+async function handleUpdatePassword() {
+  try {
+    await pwdFormRef.value.validate()
+  } catch {
+    return
+  }
+  
+  pwdLoading.value = true
+  try {
+    await updatePassword(pwdForm.oldPassword, pwdForm.newPassword)
+    ElMessage.success('密码修改成功')
+    showPasswordDialog.value = false
+    pwdForm.oldPassword = ''
+    pwdForm.newPassword = ''
+    pwdForm.confirmPassword = ''
+  } catch (error) {
+    console.error('修改密码失败', error)
+  } finally {
+    pwdLoading.value = false
+  }
+}
 
 // 保存头像到 localStorage
 function saveAvatar(url) {
@@ -112,13 +189,13 @@ function handleRemoveAvatar() {
 }
 
 const formData = reactive({
-  username: userStore.userInfo?.username || 'admin',
-  realName: userStore.userInfo?.realName || '系统管理员',
-  phone: '13800138000',
-  email: 'admin@jujing.com',
-  deptName: '信息技术部',
-  roles: ['超级管理员'],
-  createTime: '2026-01-01 00:00:00'
+  username: '',
+  realName: '',
+  phone: '',
+  email: '',
+  deptName: '',
+  roles: [],
+  createTime: ''
 })
 
 const rules = {
@@ -131,20 +208,56 @@ const rules = {
   ]
 }
 
+// 页面加载时获取用户信息
+onMounted(async () => {
+  try {
+    const res = await getUserInfo()
+    if (res.code === 200) {
+      const user = res.data
+      formData.username = user.username || ''
+      formData.realName = user.realName || ''
+      formData.phone = user.phone || ''
+      formData.email = user.email || ''
+      formData.roles = user.roles || []
+      avatarUrl.value = user.avatar || localStorage.getItem('userAvatar') || ''
+      // 更新 store 中的用户信息
+      userStore.setUserInfo(user)
+    }
+  } catch (error) {
+    console.error('获取用户信息失败', error)
+  }
+})
+
 async function handleSave() {
   try { await formRef.value.validate() } catch { return }
   saveLoading.value = true
-  // 模拟保存
-  setTimeout(() => {
-    saveLoading.value = false
+  try {
+    await updateProfile({
+      realName: formData.realName,
+      phone: formData.phone,
+      email: formData.email,
+      avatar: avatarUrl.value
+    })
     ElMessage.success('个人信息保存成功')
-  }, 500)
+    // 更新本地存储的头像
+    if (avatarUrl.value) {
+      localStorage.setItem('userAvatar', avatarUrl.value)
+    }
+    // 更新 store 中的用户信息
+    userStore.userInfo.realName = formData.realName
+    userStore.userInfo.avatar = avatarUrl.value
+  } catch (error) {
+    console.error('保存失败', error)
+  } finally {
+    saveLoading.value = false
+  }
 }
 
 function handleReset() {
-  formData.realName = userStore.userInfo?.realName || '系统管理员'
-  formData.phone = '13800138000'
-  formData.email = 'admin@jujing.com'
+  formData.realName = userStore.userInfo?.realName || ''
+  formData.phone = userStore.userInfo?.phone || ''
+  formData.email = userStore.userInfo?.email || ''
+  avatarUrl.value = userStore.userInfo?.avatar || localStorage.getItem('userAvatar') || ''
   formRef.value?.resetFields()
 }
 </script>

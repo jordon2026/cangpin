@@ -100,3 +100,48 @@
   - 系统管理子菜单（6个）：用户管理、角色管理、菜单管理、部门管理、操作日志、数据备份
 - **路由缺失修复**：添加了 `collection/borrow` 和 `rfid/inventory` 路由
 - **新增组件**：`views/collection/borrow/index.vue`（藏品借出）、`views/rfid/inventory/index.vue`（标签盘点）
+
+## 业务模块开发 - 2026-04-10
+
+### 已完成
+1. **Profile 个人信息**：后端添加 updateUserInfo 接口，前端对接
+2. **Dashboard 仪表盘**：后端添加统计接口，前端对接
+3. **藏品管理模块**：完整 CRUD
+4. **库房管理模块**：完整 CRUD
+5. **入库管理模块**：申请/审批流程
+6. **出库管理模块**：申请/审批/归还流程
+7. **环境监测模块**：前端优化
+
+### 数据库表 (db/collection_table.sql)
+- collection（藏品表）
+- storage（库房表）
+- collection_category（分类表）
+- inbound（入库记录表）
+- outbound（出库记录表）
+- rfid_tag、rfid_device（RFID表）
+- inventory_task、inventory_record（盘点表）
+- repair_order（修复工单表）
+- loan_apply（外借申请表）
+- environment_data（环境监测表）
+
+### 后端模块路径
+- `modules/collection/entity/`：Collection, Storage, Inbound, Outbound
+- `modules/collection/mapper/`：CollectionMapper, StorageMapper, InboundMapper, OutboundMapper
+- `modules/collection/service/`：CollectionService, StorageService, InboundService, OutboundService
+- `modules/collection/controller/`：CollectionController, StorageController, InboundController, OutboundController
+- `modules/collection/dto/`：CollectionDTO, StorageDTO, InboundDTO, OutboundDTO
+
+### 前端 API 路径
+- `src/api/collection.js`
+- `src/api/storage.js`
+- `src/api/inbound.js`
+- `src/api/outbound.js`
+- `src/api/auth.js`（添加 dashboard 接口）
+
+### 待完成
+- RFID管理（tag/device/inventory）
+- 盘点管理（task/record）
+- 修复管理（order）
+- 外借管理（apply）
+- 执行建表 SQL
+

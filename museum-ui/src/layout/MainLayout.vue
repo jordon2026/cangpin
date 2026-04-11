@@ -131,6 +131,7 @@ import { useUserStore } from '../stores/user'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import Breadcrumb from './components/Breadcrumb.vue'
 import TagsView from './components/TagsView.vue'
+import { updatePassword } from '@/api/system/user'
 
 const route = useRoute()
 const router = useRouter()
@@ -312,12 +313,19 @@ function handleUserCommand(command) {
 async function handleSubmitPwd() {
   try { await pwdFormRef.value.validate() } catch { return }
   pwdLoading.value = true
-  // 模拟修改密码
-  setTimeout(() => {
-    pwdLoading.value = false
-    pwdDialogVisible.value = false
+  try {
+    await updatePassword(pwdForm.oldPassword, pwdForm.newPassword)
     ElMessage.success('密码修改成功')
-  }, 500)
+    pwdDialogVisible.value = false
+    // 清空表单
+    pwdForm.oldPassword = ''
+    pwdForm.newPassword = ''
+    pwdForm.confirmPassword = ''
+  } catch (error) {
+    console.error('修改密码失败', error)
+  } finally {
+    pwdLoading.value = false
+  }
 }
 </script>
 

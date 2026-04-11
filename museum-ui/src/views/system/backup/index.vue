@@ -182,9 +182,24 @@ async function handleBackup() {
 // 下载备份
 async function handleDownload(row) {
   try {
-    ElMessage.info('正在下载备份文件...')
-    const res = await downloadBackup(row.fileName)
-    const blob = new Blob([res], { type: 'application/octet-stream' })
+    const token = localStorage.getItem('token')
+    if (!token) {
+      ElMessage.error('未登录')
+      return
+    }
+    
+    ElMessage.info('正在下载...')
+    const response = await fetch(`/api/v1/backup/download?fileName=${encodeURIComponent(row.fileName)}`, {
+      headers: {
+        'Authorization': token
+      }
+    })
+    
+    if (!response.ok) {
+      throw new Error('下载失败')
+    }
+    
+    const blob = await response.blob()
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url

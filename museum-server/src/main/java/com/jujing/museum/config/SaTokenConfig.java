@@ -21,10 +21,6 @@ public class SaTokenConfig implements WebMvcConfigurer {
     @Autowired
     private SecurityInterceptor securityInterceptor;
 
-    /** 允许的前端来源，生产环境通过 application.yml 配置 */
-    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
-    private String[] allowedOrigins;
-
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 1. 注册安全拦截器（XSS检测）—— 必须在 Sa-Token 拦截器之前
@@ -45,9 +41,9 @@ public class SaTokenConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        // 仅允许配置的来源，不使用通配符*，防止CORS滥用
+        // 使用 allowedOriginPatterns 支持通配符，配合 allowCredentials
         registry.addMapping("/api/**")
-                .allowedOrigins(allowedOrigins)
+                .allowedOriginPatterns("*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
