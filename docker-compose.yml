@@ -51,12 +51,12 @@ services:
     container_name: museum-backend
     restart: always
     environment:
-      # 数据库 - 与 application.yml 中的占位符名一致
-      DB_HOST: mysql
+      # 【服务器部署】连接外部 MySQL（host.docker.internal 指向宿主机）
+      DB_HOST: host.docker.internal
       DB_PORT: 3306
       DB_NAME: museum_db
-      DB_USERNAME: museum
-      DB_PASSWORD: museum_password_2024
+      DB_USERNAME: root
+      DB_PASSWORD: ddc53f497394aae1
       # Redis
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -65,9 +65,8 @@ services:
       BACKUP_PATH: /data/backup
       # 【修复】Docker容器内备份：指定MySQL容器名
       APP_BACKUP_DOCKER_CONTAINER: museum-mysql
-      # 【修复】覆盖 datasource URL，关闭 SSL（Docker 内网不需要）
-      # 注意：init.sql 创建的数据库名是 museum_db，不要改成 museum
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/museum_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+      # 【服务器部署】覆盖 datasource URL，连接宿主机 MySQL
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/museum_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     volumes:
       - backend_data:/data
       # 【修复】挂载 Docker socket，以便在容器内执行 docker exec
