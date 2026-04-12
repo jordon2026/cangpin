@@ -55,8 +55,8 @@ services:
       DB_HOST: host.docker.internal
       DB_PORT: 3306
       DB_NAME: museum_db
-      DB_USERNAME: root
-      DB_PASSWORD: museum_root_2024
+      DB_USERNAME: museum_user
+      DB_PASSWORD: museum2026
       # Redis
       REDIS_HOST: redis
       REDIS_PORT: 6379
