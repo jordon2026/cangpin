@@ -10,6 +10,11 @@ export function getTaskDetail(id) {
   return request({ url: `/inventory/task/${id}`, method: 'get' })
 }
 
+// 盘点任务详情（别名）
+export function getTaskById(id) {
+  return request({ url: `/inventory/task/${id}`, method: 'get' })
+}
+
 // 创建盘点任务
 export function addTask(data) {
   return request({ url: '/inventory/task', method: 'post', data })

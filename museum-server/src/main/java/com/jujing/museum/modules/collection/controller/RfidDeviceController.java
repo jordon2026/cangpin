@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Tag(name = "RFID设备管理")
 @RestController
-@RequestMapping("/rfid/device")
+@RequestMapping("/api/v1/rfid/device")
 @RequiredArgsConstructor
 public class RfidDeviceController {
 

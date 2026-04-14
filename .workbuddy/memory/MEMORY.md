@@ -145,3 +145,32 @@
 - 外借管理（apply）
 - 执行建表 SQL
 
+## 部署踩坑记录 - 2026-04-12
+
+### 服务器配置
+- 服务器：bwg.jujingyun.com（阿里云）
+- MySQL root 密码：museum_root_2024
+- 数据库：museum_db
+- Nginx 根目录：`/www/wwwroot/bowuguan/museum-ui/dist`
+- 后端端口：8080
+- Docker 网络：后端 172.30.0.4，MySQL 172.30.0.3
+
+### 常见坑点
+
+| 问题 | 现象 | 解决方案 |
+|------|------|----------|
+| MySQL 权限 | Access denied | 直接用 root，别折腾新用户 |
+| MySQL 8 语法 | `GRANT IDENTIFIED BY` 报错 | 改用 `ALTER USER` |
+| 字符集乱码 | latin1 导致中文乱码 | docker-compose 加 `characterEncoding=utf-8` |
+| SQL BOM 头 | `ASCII '\0' appeared` | `sed -i '1s/^\xEF\xBB\xBF//'` 去 BOM |
+| 菜单数据缺失 | 只显示部分菜单 | 导入 menu_full.sql（43条完整数据）|
+| 前端不更新 | 上传文件后页面没变 | `chattr -i .user.ini` 解除保护 |
+| 前端构建失败 | `getList is not exported` | API 文件要加 `export function getList` 别名 |
+
+### 部署 checklist
+1. [ ] 数据库字符集 utf8mb4
+2. [ ] 菜单数据完整（43条）
+3. [ ] API 导出检查（getList 别名）
+4. [ ] 解除 .user.ini 保护
+5. [ ] 清除浏览器缓存
+

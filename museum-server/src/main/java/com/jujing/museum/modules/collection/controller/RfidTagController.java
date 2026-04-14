@@ -19,7 +19,7 @@ import java.util.List;
  */
 @Tag(name = "RFID标签管理")
 @RestController
-@RequestMapping("/rfid/tag")
+@RequestMapping("/api/v1/rfid/tag")
 @RequiredArgsConstructor
 public class RfidTagController {
 

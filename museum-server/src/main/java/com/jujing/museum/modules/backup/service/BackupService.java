@@ -49,6 +49,9 @@ public class BackupService {
     @Value("${app.backup.docker-container:}")
     private String dockerContainer;
 
+    @Value("${app.backup.use-host-docker:false}")
+    private boolean useHostDocker;
+
     /**
      * 执行数据库备份
      * 使用 TCP 直连方式：直接连接 MySQL 执行 mysqldump
@@ -73,12 +76,27 @@ public class BackupService {
 
         // 查找 mysqldump 命令
         String mysqldump = findMysqldump();
+        boolean useDocker = mysqldump.startsWith("docker:");
 
         // 构建命令
         List<String> command = new ArrayList<>();
-        command.add(mysqldump);
-        command.add("-h" + host);
-        command.add("-P" + port);
+        if (useDocker) {
+            // Docker 模式: docker exec container mysqldump ...
+            // 格式: docker:container:cmd
+            String[] parts = mysqldump.split(":");
+            String container = parts[1];
+            command.add("docker");
+            command.add("exec");
+            command.add(container);
+            command.add("mysqldump");
+            // Docker 内部连接 MySQL 容器，使用容器名或 IP
+            command.add("-hmuseum-mysql");
+            command.add("-P3306");
+        } else {
+            command.add(mysqldump);
+            command.add("-h" + host);
+            command.add("-P" + port);
+        }
         command.add("-u" + dbUsername);
         if (StrUtil.isNotEmpty(dbPassword)) {
             command.add("-p" + dbPassword);
@@ -88,13 +106,16 @@ public class BackupService {
         command.add("--triggers");
         command.add("--routines");
         command.add("--events");
+        command.add("--skip-ssl");
         command.add(dbName);
 
         log.info("执行备份命令: {}", String.join(" ", command).replace("-p" + dbPassword, "-p******"));
 
         // 执行备份
         ProcessBuilder pb = new ProcessBuilder(command);
-        pb.environment().put("MYSQL_PWD", StrUtil.isNotEmpty(dbPassword) ? dbPassword : "");
+        if (!useDocker) {
+            pb.environment().put("MYSQL_PWD", StrUtil.isNotEmpty(dbPassword) ? dbPassword : "");
+        }
         pb.redirectErrorStream(false);
 
         Process process = pb.start();
@@ -235,23 +256,41 @@ public class BackupService {
 
         // 查找 mysql 命令
         String mysql = findMysql();
+        boolean useDocker = mysql.startsWith("docker:");
 
-        // 构建命令 - 直接 TCP 连接
+        // 构建命令
         List<String> command = new ArrayList<>();
-        command.add(mysql);
-        command.add("-h" + host);
-        command.add("-P" + port);
+        if (useDocker) {
+            // Docker 模式
+            // 格式: docker:container:cmd
+            String[] parts = mysql.split(":");
+            String container = parts[1];
+            command.add("docker");
+            command.add("exec");
+            command.add("-i");
+            command.add(container);
+            command.add("mysql");
+            command.add("-hmuseum-mysql");
+            command.add("-P3306");
+        } else {
+            command.add(mysql);
+            command.add("-h" + host);
+            command.add("-P" + port);
+        }
         command.add("-u" + dbUsername);
         if (StrUtil.isNotEmpty(dbPassword)) {
             command.add("-p" + dbPassword);
         }
+        command.add("--skip-ssl");
         command.add(dbName);
 
         log.info("执行恢复命令: {}", String.join(" ", command).replace("-p" + dbPassword, "-p******"));
 
         // 执行恢复
         ProcessBuilder pb = new ProcessBuilder(command);
-        pb.environment().put("MYSQL_PWD", StrUtil.isNotEmpty(dbPassword) ? dbPassword : "");
+        if (!useDocker) {
+            pb.environment().put("MYSQL_PWD", StrUtil.isNotEmpty(dbPassword) ? dbPassword : "");
+        }
         pb.redirectErrorStream(false);
 
         Process process = pb.start();
@@ -313,25 +352,58 @@ public class BackupService {
 
     /**
      * 查找 mysqldump 命令
+     * 优先使用本地 mysqldump，如果不存在则使用 Docker 容器中的
      */
     private String findMysqldump() {
         if (StrUtil.isNotEmpty(mysqldumpPath) && new File(mysqldumpPath).exists()) {
             return mysqldumpPath;
         }
 
-        // 常见路径
+        // 常见路径（Linux/macOS 直接尝试执行）
         String[] paths = {
             "mysqldump",
-            "mysql\\mysqldump.exe",
-            "C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump.exe",
             "/usr/bin/mysqldump",
             "/usr/local/bin/mysqldump",
             "/usr/local/mysql/bin/mysqldump"
         };
 
         for (String path : paths) {
+            try {
+                ProcessBuilder pb = new ProcessBuilder(path, "--version");
+                pb.redirectErrorStream(true);
+                Process process = pb.start();
+                if (process.waitFor() == 0) {
+                    return path;
+                }
+            } catch (Exception e) {
+                // 忽略错误，继续尝试下一个
+            }
+        }
+
+        // Windows 路径检查
+        String[] winPaths = {
+            "C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump.exe",
+            "C:\\Program Files (x86)\\MySQL\\MySQL Server 8.0\\bin\\mysqldump.exe"
+        };
+        for (String path : winPaths) {
             if (new File(path).exists()) {
                 return path;
+            }
+        }
+
+        // 检查是否在 Docker 环境中，尝试使用 docker exec
+        // 注意：MySQL 容器可能没有 which 命令，直接用 mysqldump --version 检测
+        if (StrUtil.isNotEmpty(dockerContainer)) {
+            try {
+                ProcessBuilder pb = new ProcessBuilder("docker", "exec", dockerContainer, "mysqldump", "--version");
+                pb.redirectErrorStream(true);
+                Process process = pb.start();
+                if (process.waitFor() == 0) {
+                    // 返回 docker exec 前缀，让调用方处理
+                    return "docker:" + dockerContainer + ":mysqldump";
+                }
+            } catch (Exception e) {
+                log.warn("检查 Docker 容器 mysqldump 失败: {}", e.getMessage());
             }
         }
 
@@ -341,20 +413,53 @@ public class BackupService {
 
     /**
      * 查找 mysql 命令
+     * 优先使用本地 mysql，如果不存在则使用 Docker 容器中的
      */
     private String findMysql() {
+        // Linux/macOS 路径
         String[] paths = {
             "mysql",
-            "mysql\\mysql.exe",
-            "C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe",
             "/usr/bin/mysql",
             "/usr/local/bin/mysql",
             "/usr/local/mysql/bin/mysql"
         };
 
         for (String path : paths) {
+            try {
+                ProcessBuilder pb = new ProcessBuilder(path, "--version");
+                pb.redirectErrorStream(true);
+                Process process = pb.start();
+                if (process.waitFor() == 0) {
+                    return path;
+                }
+            } catch (Exception e) {
+                // 忽略错误，继续尝试下一个
+            }
+        }
+
+        // Windows 路径检查
+        String[] winPaths = {
+            "C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe",
+            "C:\\Program Files (x86)\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe"
+        };
+        for (String path : winPaths) {
             if (new File(path).exists()) {
                 return path;
+            }
+        }
+
+        // 检查是否在 Docker 环境中
+        // 注意：MySQL 容器可能没有 which 命令，直接用 mysql --version 检测
+        if (StrUtil.isNotEmpty(dockerContainer)) {
+            try {
+                ProcessBuilder pb = new ProcessBuilder("docker", "exec", dockerContainer, "mysql", "--version");
+                pb.redirectErrorStream(true);
+                Process process = pb.start();
+                if (process.waitFor() == 0) {
+                    return "docker:" + dockerContainer + ":mysql";
+                }
+            } catch (Exception e) {
+                log.warn("检查 Docker 容器 mysql 失败: {}", e.getMessage());
             }
         }
 

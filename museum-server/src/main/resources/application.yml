@@ -56,12 +56,15 @@ mybatis-plus:
 
 sa-token:
   token-name: Authorization
+  token-prefix: Bearer
   timeout: 86400
   active-timeout: 7200   # 2小时无操作自动过期（防止 token 被盗用后长期有效）
   is-concurrent: true
   is-share: false
   token-style: uuid
   is-log: false
+  is-read-header: true   # 从 Header 读取 token
+  is-read-cookie: false  # 不从 Cookie 读取 token
 
 knife4j:
   enable: true
@@ -79,6 +82,8 @@ app:
     path: ${BACKUP_PATH:D:/聚景科技/2026/博物馆/备份}
     # MySQL mysqldump 命令路径（留空自动查找）
     mysqldump: ${MYSQLDUMP_PATH:}
+    # Docker MySQL 容器名（用于在容器内执行 mysqldump）
+    docker-container: ${BACKUP_DOCKER_CONTAINER:museum-mysql}
     # 最大保留备份文件数量
     max-keep: 30
 

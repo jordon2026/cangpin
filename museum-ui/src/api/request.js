@@ -15,7 +15,8 @@ request.interceptors.request.use(
   config => {
     const token = localStorage.getItem('token')
     if (token) {
-      config.headers['Authorization'] = token
+      // 确保 token 带有 Bearer 前缀
+      config.headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`
     }
     return config
   },
@@ -27,6 +28,11 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   response => {
+    // 对于 blob 响应，直接返回 response 对象，让业务层处理
+    if (response.config.responseType === 'blob') {
+      return response.data
+    }
+    
     const res = response.data
     if (res.code === 200) {
       return res
@@ -44,10 +50,21 @@ request.interceptors.response.use(
       return Promise.reject(new Error(res.msg || '请求失败'))
     }
   },
-  error => {
+  async error => {
     if (error.response) {
       const status = error.response.status
-      const data = error.response.data
+      let data = error.response.data
+      
+      // 如果响应是 blob 类型，尝试解析为 JSON
+      if (data instanceof Blob) {
+        try {
+          const text = await data.text()
+          data = JSON.parse(text)
+        } catch (e) {
+          // 解析失败，保持原样
+        }
+      }
+      
       if (status === 401) {
         ElMessage.error('登录已过期，请重新登录')
         localStorage.removeItem('token')

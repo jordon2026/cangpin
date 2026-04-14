@@ -56,17 +56,12 @@ public class BackupController {
     @GetMapping("/download")
     public ResponseEntity<Resource> downloadBackup(
             @Parameter(description = "备份文件名") @RequestParam String fileName) {
-        try {
-            Resource resource = backupService.downloadBackup(fileName);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"" + fileName + "\"")
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(resource);
-        } catch (Exception e) {
-            log.error("下载备份文件失败", e);
-            return ResponseEntity.notFound().build();
-        }
+        Resource resource = backupService.downloadBackup(fileName);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + fileName + "\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 
     @Operation(summary = "上传并恢复备份")

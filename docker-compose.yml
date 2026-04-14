@@ -45,9 +45,7 @@ services:
 
   # Spring Boot 后端
   backend:
-    build:
-      context: ./museum-server
-      dockerfile: Dockerfile
+    image: amazoncorretto:17-alpine
     container_name: museum-backend
     restart: always
     environment:
@@ -68,11 +66,15 @@ services:
       # 【服务器部署】覆盖 datasource URL，连接 MySQL 容器
       SPRING_DATASOURCE_URL: jdbc:mysql://172.30.0.3:3306/museum_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     volumes:
+      - ./museum-server/target/museum-server-1.0.0-SNAPSHOT.jar:/app/app.jar
       - backend_data:/data
-      # 【修复】挂载 Docker socket，以便在容器内执行 docker exec
+      # 【修复】挂载 Docker socket 和 docker 二进制文件，以便在容器内执行 docker exec
       - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker:ro
+      - /usr/libexec/docker:/usr/libexec/docker:ro
     ports:
       - "8080:8080"
+    command: ["sh", "-c", "apk add --no-cache curl fontconfig ttf-dejavu mysql-client && java -jar /app/app.jar"]
     depends_on:
       mysql:
         condition: service_healthy

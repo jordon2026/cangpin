@@ -138,6 +138,7 @@ import {
   restoreFromFile,
   deleteBackup
 } from '@/api/system/backup'
+import request from '@/api/request'
 
 // 数据
 const loading = ref(false)
@@ -182,24 +183,19 @@ async function handleBackup() {
 // 下载备份
 async function handleDownload(row) {
   try {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      ElMessage.error('未登录')
-      return
-    }
-    
     ElMessage.info('正在下载...')
-    const response = await fetch(`/api/v1/backup/download?fileName=${encodeURIComponent(row.fileName)}`, {
-      headers: {
-        'Authorization': token
-      }
+    
+    // 使用 axios 下载，自动携带 Authorization Header
+    const response = await request({
+      url: '/backup/download',
+      method: 'get',
+      params: { fileName: row.fileName },
+      responseType: 'blob'
     })
     
-    if (!response.ok) {
-      throw new Error('下载失败')
-    }
+    // axios 拦截器已经处理了响应，response 就是 blob 数据
+    const blob = response
     
-    const blob = await response.blob()
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -211,7 +207,7 @@ async function handleDownload(row) {
     ElMessage.success('下载完成')
   } catch (error) {
     console.error('下载失败', error)
-    ElMessage.error('下载失败')
+    ElMessage.error(error.message || '下载失败')
   }
 }
 

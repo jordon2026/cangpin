@@ -5,6 +5,11 @@ export function getCollectionList(params) {
   return request({ url: '/collection/list', method: 'get', params })
 }
 
+// 藏品列表（别名）
+export function getList(params) {
+  return request({ url: '/collection/list', method: 'get', params })
+}
+
 // 藏品详情
 export function getCollectionDetail(id) {
   return request({ url: `/collection/${id}`, method: 'get' })

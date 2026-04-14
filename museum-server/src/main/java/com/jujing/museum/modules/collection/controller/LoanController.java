@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Tag(name = "外借申请管理")
 @RestController
-@RequestMapping("/loan/apply")
+@RequestMapping("/api/v1/loan/apply")
 @RequiredArgsConstructor
 public class LoanController {
 

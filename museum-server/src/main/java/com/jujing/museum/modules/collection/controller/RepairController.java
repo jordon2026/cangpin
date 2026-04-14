@@ -18,7 +18,7 @@ import java.math.BigDecimal;
  */
 @Tag(name = "修复工单管理")
 @RestController
-@RequestMapping("/repair/order")
+@RequestMapping("/api/v1/repair/order")
 @RequiredArgsConstructor
 public class RepairController {
 

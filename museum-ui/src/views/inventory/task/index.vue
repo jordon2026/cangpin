@@ -131,6 +131,7 @@ import { Plus } from '@element-plus/icons-vue'
 import { getTaskList, addTask, getTaskById, deleteTask } from '@/api/inventory/index'
 import { getList as getStorageList } from '@/api/storage'
 import { getUserList } from '@/api/system/user'
+import request from '@/api/request'
 
 const loading = ref(false)
 const submitLoading = ref(false)
@@ -310,8 +311,6 @@ async function handleDelete(row) {
     console.error('删除失败', error)
   }
 }
-
-import request from '@/api/request'
 
 onMounted(() => {
   loadData()

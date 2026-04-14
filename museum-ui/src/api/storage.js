@@ -5,6 +5,11 @@ export function getStorageList(params) {
   return request({ url: '/storage/list', method: 'get', params })
 }
 
+// 库房列表（别名）
+export function getList(params) {
+  return request({ url: '/storage/list', method: 'get', params })
+}
+
 // 所有库房（下拉框用）
 export function getAllStorages() {
   return request({ url: '/storage/all', method: 'get' })
